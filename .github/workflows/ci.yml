@@ -36,6 +36,11 @@ jobs:
       - name: Show active toolchain
         run: rustup show
 
+      # Runner images default to the minimal rustup profile, which omits
+      # rustfmt/clippy; add them explicitly for the pinned toolchain.
+      - name: Ensure rustfmt and clippy components
+        run: rustup component add rustfmt clippy
+
       - uses: Swatinem/rust-cache@v2
 
       - name: rustfmt
