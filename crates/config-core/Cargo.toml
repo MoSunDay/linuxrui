@@ -1,0 +1,11 @@
+[package]
+name = "config-core"
+description = "Headless TOML configuration model, versioned load/save and pure-function migrations"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+toml = { workspace = true }

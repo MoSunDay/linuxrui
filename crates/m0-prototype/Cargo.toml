@@ -1,0 +1,25 @@
+[package]
+name = "m0-prototype"
+description = "M0 Slint prototype: Wayland-only xdg-shell window fed by the capability probe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+slint = { workspace = true }
+wayland-probe = { path = "../wayland-probe" }
+
+[lib]
+name = "m0_prototype"
+path = "src/lib.rs"
+
+[[bin]]
+name = "m0-prototype"
+path = "src/main.rs"
+
+[build-dependencies]
+slint-build = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

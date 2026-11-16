@@ -1,0 +1,14 @@
+[package]
+name = "wayland-probe"
+description = "Probe-only Wayland capability detection CLI: one roundtrip, registry globals, stable JSON report"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+wayland-client = { workspace = true, default-features = false }
+wayland-protocols = { workspace = true, default-features = false, features = ["client", "staging", "unstable"] }
+wayland-protocols-wlr = { workspace = true, default-features = false, features = ["client"] }
+serde = { workspace = true }
+serde_json = { workspace = true }

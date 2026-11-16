@@ -1,0 +1,56 @@
+import { Button, ScrollView, VerticalBox } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    title: "Rust M0 Prototype";
+    preferred-width: 640px;
+    preferred-height: 440px;
+    background: #111418;
+
+    in-out property <string> status-text;
+    in-out property <string> protocol-text;
+    callback refresh-clicked();
+    callback quit-clicked();
+
+    VerticalBox {
+        padding: 16px;
+        spacing: 12px;
+
+        Text {
+            text: root.status-text;
+            wrap: word-wrap;
+            font-size: 20px;
+            color: #f3f5f7;
+        }
+
+        // Scrollable protocol details: content-width tracks the visible area
+        // so the wrapped text never needs horizontal scrolling, while long
+        // reports grow the content height and scroll vertically.
+        protocol-view := ScrollView {
+            vertical-stretch: 1;
+            content-width: self.visible-width;
+
+            Text {
+                width: protocol-view.content-width;
+                text: root.protocol-text;
+                wrap: word-wrap;
+                font-size: 14px;
+                color: #d5dbe1;
+            }
+        }
+
+        HorizontalLayout {
+            alignment: end;
+            spacing: 8px;
+
+            Button {
+                text: "Refresh";
+                clicked => root.refresh-clicked();
+            }
+
+            Button {
+                text: "Quit";
+                clicked => root.quit-clicked();
+            }
+        }
+    }
+}

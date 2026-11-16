@@ -1,0 +1,9 @@
+[package]
+name = "desktop-entry"
+description = "Minimal headless Desktop Entry parser, localization and visibility filtering (no GTK)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]

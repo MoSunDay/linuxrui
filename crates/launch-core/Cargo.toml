@@ -1,0 +1,9 @@
+[package]
+name = "launch-core"
+description = "Headless Desktop Exec tokenizer, field-code expansion and launch planning (no shell)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]

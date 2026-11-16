@@ -1,0 +1,43 @@
+# Workspace root for the lightweight Wayland desktop components (see plans/rust-lightweight-linux-gui.md).
+# Members: headless core crates (M1 direction: config, desktop entry parsing,
+# launch planning), the Wayland capability probe, and the M0 Slint prototype.
+[workspace]
+resolver = "2"
+members = [
+    "crates/config-core",
+    "crates/desktop-entry",
+    "crates/launch-core",
+    "crates/wayland-probe",
+    "crates/m0-prototype",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.97.1"
+license = "MIT"
+
+# Shared dependency versions; crates reference these with `workspace = true`.
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.9"
+# Direct Wayland client stack for wayland-probe (client-only, Rust backend).
+wayland-client = { version = "0.31", default-features = false }
+wayland-protocols = { version = "0.32", default-features = false }
+wayland-protocols-wlr = { version = "0.3", default-features = false }
+
+# UI baseline for M0. Exact pin + Wayland-only winit backend + software renderer;
+# accessibility stays on; femtovg/Skia/wgpu/system-tray and the winit X11 backend stay
+# out. arboard still compiles x11rb transitively on Linux; see docs/adr/0001.
+slint = { version = "=1.18.1", default-features = false, features = ["std", "backend-winit-wayland", "renderer-software", "accessibility", "compat-1-18"] }
+slint-build = { version = "=1.18.1" }
+
+# Release profile for the lightweight footprint goal: record all knobs explicitly.
+# opt-level 3 + thin LTO keeps build times sane while shrinking/cross-cranking hot paths;
+# single codegen unit maximizes what LTO can see; strip removes symbol bloat from binaries.
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
