@@ -16,8 +16,6 @@ OUTDIR=${2:?usage: sway-headless-run.sh <binary> <outdir>}
 BIN=$(readlink -f "$BIN")
 mkdir -p "$OUTDIR"
 
-id m0run >/dev/null 2>&1 || useradd -m -s /usr/sbin/nologin m0run
-
 RUN=/tmp/m0-sway-run-$$
 mkdir -p "$RUN/xdg"
 chmod 700 "$RUN/xdg"
@@ -25,23 +23,39 @@ cp "$BIN" "$RUN/app"
 cat > "$RUN/config" <<'CFG'
 output HEADLESS-1 mode 1280x800
 CFG
-chown -R m0run:m0run "$RUN" "$OUTDIR"
-
 XDG="$RUN/xdg"
 SOCK="$XDG/sway-ipc.sock"
 DISPLAY_NAME="m0-sway-$$"
 
-# Run a command as the unprivileged user with the session environment set.
-as_user() {
-  runuser -u m0run -- env \
-    XDG_RUNTIME_DIR="$XDG" \
-    WLR_BACKENDS=headless \
-    WLR_LIBINPUT_NO_DEVICES=1 \
-    WLR_RENDERER=pixman \
-    SWAYSOCK="$SOCK" \
-    WAYLAND_DISPLAY="${WL_SOCK:-$DISPLAY_NAME}" \
-    "$@"
-}
+if [ "$(id -u)" -eq 0 ]; then
+  # sway refuses to run as root; delegate the whole session to an
+  # unprivileged user when we happen to be root (bare-metal host).
+  id m0run >/dev/null 2>&1 || useradd -m -s /usr/sbin/nologin m0run
+  chown -R m0run:m0run "$RUN" "$OUTDIR"
+  # shellcheck disable=SC2016  (vars must expand for the root shell here)
+  as_user() {
+    runuser -u m0run -- env \
+      XDG_RUNTIME_DIR="$XDG" \
+      WLR_BACKENDS=headless \
+      WLR_LIBINPUT_NO_DEVICES=1 \
+      WLR_RENDERER=pixman \
+      SWAYSOCK="$SOCK" \
+      WAYLAND_DISPLAY="${WL_SOCK:-$DISPLAY_NAME}" \
+      "$@"
+  }
+else
+  # CI runners are unprivileged already; run as the current user.
+  as_user() {
+    env \
+      XDG_RUNTIME_DIR="$XDG" \
+      WLR_BACKENDS=headless \
+      WLR_LIBINPUT_NO_DEVICES=1 \
+      WLR_RENDERER=pixman \
+      SWAYSOCK="$SOCK" \
+      WAYLAND_DISPLAY="${WL_SOCK:-$DISPLAY_NAME}" \
+      "$@"
+  }
+fi
 
 cleanup() {
   kill "${APP_PID:-0}" 2>/dev/null || true
@@ -56,7 +70,7 @@ trap cleanup EXIT
 as_user sway --unsupported-gpu -c "$RUN/config" >"$OUTDIR/sway.log" 2>&1 &
 SWAY_PID=$!
 
-for _ in $(seq 1 50); do
+for _ in $(seq 1 150); do
   [ -S "$SOCK" ] && break
   sleep 0.1
 done
