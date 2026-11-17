@@ -1,6 +1,6 @@
 # ADR 0002: sway headless session verification and the XFCE-referenced xdg-shell window
 
-- Status: Accepted
+- Status: Accepted (T2.2 layer-shell panel since implemented; see ADR 0003)
 - Date: 2026-11-17
 - Supersedes: none; extends ADR 0001 (slint local-build baseline)
 

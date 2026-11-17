@@ -1,0 +1,5 @@
+PANEL_ALIVE=yes
+TREE_HIT=0
+SCREENSHOT=yes
+PNG_BYTES=5356
+PIXEL_AUDIT=pass:bg_top=True,accent=True,text_ink=True,zone_below=True

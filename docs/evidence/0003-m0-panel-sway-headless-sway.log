@@ -1,0 +1,4 @@
+00:00:00.003 [ERROR] [sway/main.c:62] !!! Proprietary Nvidia drivers are in use !!!
+00:00:00.004 [ERROR] [wlr] [render/wlr_renderer.c:345] Failed to open '/dev/dri/renderD128': Permission denied
+00:00:00.004 [ERROR] [wlr] [types/wlr_drm_lease_v1.c:705] No DRM backend supplied, failed to create wlr_drm_lease_v1_manager
+00:00:00.035 [ERROR] [wlr] [xwayland/sockets.c:63] Failed to bind socket @/tmp/.X11-unix/X0: Address already in use
