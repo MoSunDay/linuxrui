@@ -1,55 +1,234 @@
-import { Button, ScrollView, VerticalBox } from "std-widgets.slint";
+import { Button, ListView, ScrollView } from "std-widgets.slint";
 
+export struct AppEntryData {
+    name: string,
+    comment: string,
+    desktop-id: string,
+    exec-preview: string,
+    terminal: bool,
+    demo: bool,
+}
+
+// XFCE-referenced shell window: dark top panel with a live clock, an
+// appfinder-style launcher list on the left, and a detail pane (selected
+// app + launch plan + capability probe) on the right.
 export component AppWindow inherits Window {
-    title: "Rust M0 Prototype";
-    preferred-width: 640px;
-    preferred-height: 440px;
-    background: #111418;
+    title: "Rust M0 Shell (XFCE-referenced)";
+    preferred-width: 1280px;
+    preferred-height: 720px;
+    background: #22262e;
 
     in-out property <string> status-text;
     in-out property <string> protocol-text;
+    in-out property <string> clock-text;
+    in-out property <string> launcher-note;
+    in-out property <[AppEntryData]> app-model;
+    in-out property <int> selected-index: -1;
+    in-out property <string> detail-name;
+    in-out property <string> detail-comment;
+    in-out property <string> detail-id;
+    in-out property <string> detail-exec;
+    in-out property <bool> detail-terminal;
+    in-out property <bool> detail-demo;
+
     callback refresh-clicked();
     callback quit-clicked();
+    callback app-selected(int);
 
-    VerticalBox {
-        padding: 16px;
-        spacing: 12px;
+    VerticalLayout {
+        // xfce4-panel-style top bar.
+        Rectangle {
+            height: 42px;
+            background: #16181d;
+            HorizontalLayout {
+                padding-left: 14px;
+                padding-right: 14px;
+                alignment: space-between;
 
-        Text {
-            text: root.status-text;
-            wrap: word-wrap;
-            font-size: 20px;
-            color: #f3f5f7;
-        }
-
-        // Scrollable protocol details: content-width tracks the visible area
-        // so the wrapped text never needs horizontal scrolling, while long
-        // reports grow the content height and scroll vertically.
-        protocol-view := ScrollView {
-            vertical-stretch: 1;
-            content-width: self.visible-width;
-
-            Text {
-                width: protocol-view.content-width;
-                text: root.protocol-text;
-                wrap: word-wrap;
-                font-size: 14px;
-                color: #d5dbe1;
+                HorizontalLayout {
+                    spacing: 12px;
+                    alignment: start;
+                    Text {
+                        text: "Applications";
+                        color: #e8ecf1;
+                        font-size: 15px;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: root.launcher-note;
+                        color: #7f8ea8;
+                        font-size: 13px;
+                        vertical-alignment: center;
+                    }
+                }
+                Text {
+                    text: root.clock-text;
+                    color: #e8ecf1;
+                    font-size: 14px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                }
             }
         }
+        Rectangle { height: 2px; background: #36689e; } // Xfce blue accent
 
+        // Main area: launcher list (appfinder) + detail pane.
         HorizontalLayout {
-            alignment: end;
-            spacing: 8px;
-
-            Button {
-                text: "Refresh";
-                clicked => root.refresh-clicked();
+            launcher-pane := Rectangle {
+                horizontal-stretch: 3;
+                background: #262b35;
+                ListView {
+                    width: launcher-pane.width;
+                    height: launcher-pane.height;
+                    for entry[i] in root.app-model: Rectangle {
+                        height: 56px;
+                        background: i == root.selected-index ? #33415e : transparent;
+                        TouchArea {
+                            clicked => { root.app-selected(i); }
+                        }
+                        VerticalLayout {
+                            padding: 8px;
+                            padding-left: 14px;
+                            spacing: 2px;
+                            Text {
+                                text: entry.name;
+                                color: #eef1f5;
+                                font-size: 15px;
+                                font-weight: 700;
+                            }
+                            Text {
+                                text: entry.comment;
+                                color: #97a3b6;
+                                font-size: 12px;
+                                overflow: elide;
+                            }
+                        }
+                    }
+                }
             }
 
-            Button {
-                text: "Quit";
-                clicked => root.quit-clicked();
+            Rectangle {
+                horizontal-stretch: 4;
+                background: #22262e;
+                VerticalLayout {
+                    padding: 18px;
+                    spacing: 10px;
+
+                    Text {
+                        text: root.detail-name;
+                        color: #ffffff;
+                        font-size: 22px;
+                        font-weight: 800;
+                    }
+                    Text {
+                        text: root.detail-id;
+                        color: #7f8ea8;
+                        font-size: 12px;
+                    }
+                    Text {
+                        text: root.detail-comment;
+                        color: #b8c2d0;
+                        font-size: 14px;
+                        wrap: word-wrap;
+                    }
+
+                    Rectangle {
+                        height: 74px;
+                        background: #16181d;
+                        border-width: 1px;
+                        border-color: #3a4150;
+                        VerticalLayout {
+                            padding: 8px;
+                            Text {
+                                text: "launch plan";
+                                color: #7f8ea8;
+                                font-size: 11px;
+                            }
+                            Text {
+                                text: root.detail-exec;
+                                color: #9fd0ff;
+                                font-size: 13px;
+                                font-family: "monospace";
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        alignment: start;
+                        spacing: 8px;
+                        if root.detail-terminal: Rectangle {
+                            height: 20px;
+                            width: 84px;
+                            border-radius: 4px;
+                            background: #57431f;
+                            Text {
+                                text: "TERMINAL";
+                                color: #ffd08a;
+                                font-size: 10px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                            }
+                        }
+                        if root.detail-demo: Rectangle {
+                            height: 20px;
+                            width: 84px;
+                            border-radius: 4px;
+                            background: #24405e;
+                            Text {
+                                text: "DEMO TILE";
+                                color: #9fd0ff;
+                                font-size: 10px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                            }
+                        }
+                    }
+
+                    Rectangle { height: 1px; background: #3a4150; }
+                    Text {
+                        text: "Wayland probe";
+                        color: #7f8ea8;
+                        font-size: 11px;
+                    }
+                    Text {
+                        text: root.status-text;
+                        color: #d7e0ec;
+                        font-size: 13px;
+                        wrap: word-wrap;
+                    }
+                    probe-scroll := ScrollView {
+                        vertical-stretch: 1;
+                        content-width: probe-scroll.visible-width;
+                        Text {
+                            width: probe-scroll.content-width;
+                            text: root.protocol-text;
+                            color: #97a3b6;
+                            font-size: 11px;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Status bar: probe actions (unchanged CLI contract callbacks).
+        Rectangle {
+            height: 46px;
+            background: #16181d;
+            HorizontalLayout {
+                padding-left: 14px;
+                padding-right: 14px;
+                alignment: end;
+                spacing: 8px;
+                Button {
+                    text: "Refresh";
+                    clicked => root.refresh-clicked();
+                }
+                Button {
+                    text: "Quit";
+                    clicked => root.quit-clicked();
+                }
             }
         }
     }

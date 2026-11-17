@@ -39,7 +39,9 @@ fn help_flag_exits_zero_and_prints_usage() {
         assert_eq!(out.status.code(), Some(0), "flag {flag}");
         let stdout = String::from_utf8_lossy(&out.stdout);
         assert!(
-            stdout.contains("Usage: m0-prototype [--report-only] [--pretty]"),
+            stdout.contains(
+                "Usage: m0-prototype [--report-only] [--pretty] [--list-apps] [--apps-dir DIR]"
+            ),
             "unexpected help text:\n{stdout}"
         );
     }
@@ -114,5 +116,60 @@ fn pretty_flag_prints_multiline_json() {
     assert!(
         stdout.contains("\n  \""),
         "pretty output should be indented"
+    );
+}
+
+#[test]
+fn list_apps_prints_entries_from_override_dir() {
+    let dir = std::env::temp_dir().join(format!("m0-listapps-real-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("create scratch dir");
+    std::fs::write(
+        dir.join("org.m0.Editor.desktop"),
+        "[Desktop Entry]\nType=Application\nName=Editor\nComment=Edit text\nExec=m0-edit %f\n",
+    )
+    .expect("write fixture");
+    std::fs::write(
+        dir.join("org.m0.Hidden.desktop"),
+        "[Desktop Entry]\nType=Application\nName=Hidden\nNoDisplay=true\nExec=x\n",
+    )
+    .expect("write fixture");
+
+    let out = run(&["--list-apps", "--apps-dir", dir.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(
+        stdout, "org.m0.Editor.desktop\tEditor\n",
+        "NoDisplay filtered; id TAB name line"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn list_apps_falls_back_to_demo_tiles_when_index_is_empty() {
+    let dir = std::env::temp_dir().join(format!("m0-listapps-empty-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("create scratch dir");
+
+    let out = run(&["--list-apps", "--apps-dir", dir.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("demo.files\tFiles\t(demo fallback)"),
+        "unexpected fallback output:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn apps_dir_without_value_exits_with_usage_error() {
+    let out = run(&["--apps-dir"]);
+    assert_eq!(out.status.code(), Some(64));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("--apps-dir requires a path"),
+        "unexpected stderr:\n{stderr}"
     );
 }

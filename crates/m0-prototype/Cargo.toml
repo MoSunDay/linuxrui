@@ -1,12 +1,14 @@
 [package]
 name = "m0-prototype"
-description = "M0 Slint prototype: Wayland-only xdg-shell window fed by the capability probe"
+description = "M0 Slint prototype: XFCE-referenced shell UI fed by the capability probe and the XDG app index"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+desktop-entry = { path = "../desktop-entry" }
+launch-core = { path = "../launch-core" }
 slint = { workspace = true }
 wayland-probe = { path = "../wayland-probe" }
 

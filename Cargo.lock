@@ -2390,6 +2390,8 @@ dependencies = [
 name = "m0-prototype"
 version = "0.1.0"
 dependencies = [
+ "desktop-entry",
+ "launch-core",
  "serde_json",
  "slint",
  "slint-build",
