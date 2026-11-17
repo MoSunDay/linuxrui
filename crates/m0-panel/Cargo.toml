@@ -1,0 +1,11 @@
+[package]
+name = "m0-panel"
+description = "M0 layer-shell top panel (T2.2): XFCE-referenced bar with clock, software-rendered over wl_shm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+smithay-client-toolkit = { version = "=0.19.2", default-features = false }
+wayland-client = { workspace = true, default-features = false }

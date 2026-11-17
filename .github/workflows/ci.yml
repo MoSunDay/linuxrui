@@ -68,16 +68,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            pkg-config libfontconfig1-dev sway grim fonts-dejavu-core
+            pkg-config libfontconfig1-dev sway grim fonts-dejavu-core python3-pil
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Build m0-prototype
-        run: cargo build -p m0-prototype --locked
+      - name: Build m0-prototype and m0-panel
+        run: cargo build -p m0-prototype -p m0-panel --locked
 
-      - name: Run headless compositor smoke
+      - name: Run headless compositor smoke (window shell)
         run: |
           bash scripts/sway-headless-run.sh target/debug/m0-prototype evidence
+
+      - name: Run headless compositor smoke (layer-shell panel)
+        run: |
+          bash scripts/sway-headless-panel.sh target/debug/m0-panel evidence
 
       - name: Upload evidence on failure
         if: failure()

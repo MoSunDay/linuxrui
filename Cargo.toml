@@ -9,6 +9,7 @@ members = [
     "crates/launch-core",
     "crates/wayland-probe",
     "crates/m0-prototype",
+    "crates/m0-panel",
 ]
 
 [workspace.package]

@@ -2387,6 +2387,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "m0-panel"
+version = "0.1.0"
+dependencies = [
+ "smithay-client-toolkit",
+ "wayland-client",
+]
+
+[[package]]
 name = "m0-prototype"
 version = "0.1.0"
 dependencies = [
